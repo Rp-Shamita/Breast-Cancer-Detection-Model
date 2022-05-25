@@ -1,45 +1,130 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[80]:
 
 
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+%matplotlib inline
+import seaborn as sns
 #importing our cancer dataset
 dataset = pd.read_csv('breast_cancer.csv')
 X = dataset.iloc[:, 1:31].values
 Y = dataset.iloc[:, 31].values
-print(X)
 
-
-# In[2]:
+# In[17]:
 
 
 dataset.head()
 print("Cancer data set dimensions : {}".format(dataset.shape))
 
-
-# In[3]:
-
-
-dataset.isnull().sum()
-dataset.isna().sum()
+# In[18]:
 
 
-# In[4]:
+#dataset.isnull().sum()
+#dataset.isna().sum()
+
+# In[31]:
+
+
+dataset.diagnosis.value_counts()
+
+# In[39]:
+
+
+sns.countplot(dataset.diagnosis,label="count")
+plt.show()
+
+# In[44]:
 
 
 from sklearn.preprocessing import LabelEncoder
-labelencoder_Y = LabelEncoder()
-Y = labelencoder_Y.fit_transform(Y)
-print(Y)
+labelEncoder_Y=LabelEncoder()
+dataset.iloc[:,31]=labelEncoder_Y.fit_transform(dataset.iloc[:,31].values)
+print(dataset.iloc[:,31])
 
+# In[54]:
+
+
+df = dataset.iloc[:,1:6]
+df['diagnosis'] = dataset.iloc[:,31]
+sns.pairplot(df,hue="diagnosis")
+plt.show()
+
+# In[88]:
+
+
+#df = dataset.iloc[:,6:11]
+#df['diagnosis'] = dataset.iloc[:,31]
+#sns.pairplot(df,hue="diagnosis")
+#plt.show()
+
+# In[91]:
+
+
+'''
+df = dataset.iloc[:,11:16]
+df['diagnosis'] = dataset.iloc[:,31]
+sns.pairplot(df,hue="diagnosis")
+plt.show()
+'''
+
+# In[94]:
+
+
+'''
+df = dataset.iloc[:,16:21]
+df['diagnosis'] = dataset.iloc[:,31]
+sns.pairplot(df,hue="diagnosis")
+plt.show()
+'''
+
+# In[93]:
+
+
+'''
+df = dataset.iloc[:,21:26]
+df['diagnosis'] = dataset.iloc[:,31]
+sns.pairplot(df,hue="diagnosis")
+plt.show()
+'''
+
+# In[92]:
+
+
+'''
+df = dataset.iloc[:,26:32]
+df['diagnosis'] = dataset.iloc[:,31]
+sns.pairplot(df,hue="diagnosis")
+plt.show()
+'''
+
+# In[68]:
+
+
+#draw a heatmap between mean features and diagnosis
+features_mean = ['radius_mean','texture_mean','perimeter_mean','area_mean','smoothness_mean', 'compactness_mean', 'concavity_mean','concave points_mean', 'symmetry_mean', 'fractal_dimension_mean']
+plt.figure(figsize=(15,15))
+heat = sns.heatmap(dataset[features_mean].corr(), vmax=1, square=True, annot=True)
+
+# In[96]:
+
+
+# Seaborn's Stripplot 
+data_drop = dataset.drop('diagnosis',axis=1)
+features_mean = ['radius_mean','texture_mean','perimeter_mean','area_mean','smoothness_mean','compactness_mean','concavity_mean','concave points_mean','symmetry_mean','fractal_dimension_mean','radius_se','texture_se','perimeter_se','area_se','smoothness_se','compactness_se','concavity_se','concave points_se','symmetry_se','fractal_dimension_se','radius_worst','texture_worst','perimeter_worst','area_worst','smoothness_worst','compactness_worst','concavity_worst','concave points_worst','symmetry_worst','fractal_dimension_worst']
+data_drop = data_drop[features_mean]
+for index,columns in enumerate(data_drop):
+    plt.figure(index)
+    plt.figure(figsize=(10,10))
+    sns.stripplot(x='diagnosis', y= columns, data= dataset, jitter=True, palette = 'Set1');
+    plt.title('Diagnosis vs ' + str(columns))
 
 # # Logistic regression
 
-# In[5]:
+# In[65]:
 
 
 class LogisticRegression:
@@ -79,15 +164,13 @@ class LogisticRegression:
     def _sigmoid(self, x):
         return 1 / (1 + np.exp(-x))
 
-
-# In[6]:
+# In[66]:
 
 
 from sklearn.model_selection import train_test_split
 X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size = 0.25, random_state = 0)
 
-
-# In[7]:
+# In[67]:
 
 
 from sklearn.preprocessing import StandardScaler
@@ -103,12 +186,11 @@ regressor = LogisticRegression(learning_rate=0.0001, n_iters=1000)
 regressor.fit(X_train, Y_train)
 predictions = regressor.predict(X_test)
 
-print("LR classification accuracy:", accuracy(Y_test, predictions))
-
+print("\n\nLogistic Regression classification accuracy:", accuracy(Y_test, predictions))
 
 # # KNN classifier algorithm
 
-# In[8]:
+# In[23]:
 
 
 from collections import Counter
@@ -144,7 +226,7 @@ class KNN:
         return most_common[0][0]
 
 
-# In[9]:
+# In[24]:
 
 
 if __name__ == "__main__":
@@ -160,12 +242,11 @@ if __name__ == "__main__":
     clf = KNN(k=k)
     clf.fit(X_train, Y_train)
     predictions = clf.predict(X_test)
-    print("KNN classification accuracy", accuracy(Y_test, predictions))
-
+    print("KNN classification accuracy:", accuracy(Y_test, predictions))
 
 # # Decision Tree
 
-# In[10]:
+# In[25]:
 
 
 from collections import Counter
@@ -285,26 +366,24 @@ class DecisionTree:
         most_common = counter.most_common(1)[0][0]
         return most_common
 
+# In[26]:
 
-# In[11]:
 
-
-def accuracy(y_true, y_pred):
-       accuracy = np.sum(y_true == y_pred) / len(y_true)
-       return accuracy
-   
+ def accuracy(y_true, y_pred):
+        accuracy = np.sum(y_true == y_pred) / len(y_true)
+        return accuracy
+    
 clf = DecisionTree(max_depth=10)
 clf.fit(X_train, Y_train)
 
 y_pred = clf.predict(X_test)
 acc = accuracy(Y_test, y_pred)
 
-print("Accuracy:", acc)
-
+print("Decision Tree Accuracy:", acc)
 
 # # Naive Bayes 
 
-# In[12]:
+# In[27]:
 
 
 class NaiveBayes:
@@ -349,7 +428,7 @@ class NaiveBayes:
         return numerator / denominator
 
 
-# In[13]:
+# In[28]:
 
 
 def accuracy(y_true, y_pred):
@@ -362,12 +441,9 @@ predictions = nb.predict(X_test)
 
 print("Naive Bayes classification accuracy", accuracy(Y_test, predictions))
 
-
 # # Random Forest
 
-# In[15]:
-
-
+# In[29]:
 
 
 
@@ -409,8 +485,7 @@ class RandomForest:
         y_pred = [most_common_label(tree_pred) for tree_pred in tree_preds]
         return np.array(y_pred)
 
-
-# In[17]:
+# In[30]:
 
 
 def accuracy(y_true, y_pred):
@@ -423,5 +498,9 @@ clf.fit(X_train, Y_train)
 y_pred = clf.predict(X_test)
 acc = accuracy(Y_test, y_pred)
 
-print("Accuracy:", acc)
+print("Random Forest Classification Accuracy:", acc)
+
+# In[ ]:
+
+
 
